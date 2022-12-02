@@ -1,0 +1,10 @@
+__pycache__/
+*.py[cod]
+*$py.class
+
+.DS_Store
+.vscode/
+
+/internal/
+/input/data.csv
+/output/
