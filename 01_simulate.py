@@ -1,3 +1,4 @@
+import gc
 import json
 import math
 import os
@@ -179,6 +180,7 @@ def main():
 
     consts = init_consts()
     while True:
+        gc.collect()
         df_generation = next_year(consts, df_generation)
         output_summary(df_generation, year)
         year += 1
