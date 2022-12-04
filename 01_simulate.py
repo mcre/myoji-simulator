@@ -1,4 +1,3 @@
-import gc
 import json
 import math
 import os
@@ -38,11 +37,11 @@ def init_consts():
     df_death_rate = df_death_rate.append(df_append)
     df_death_rate = df_death_rate.sort_index()
     df_death_rate = df_death_rate.interpolate('ffill')
-    df_survival_rate = 1 - (df_death_rate / 100000)
-    df_survival_rate = df_survival_rate.stack().reset_index()
-    df_survival_rate['male'] = df_survival_rate['level_1'] == 'male'
-    df_survival_rate.rename(columns={0: 'survival_rate', 'level_0': 'age'}, inplace=True)
-    df_survival_rate = df_survival_rate.reindex(columns=['age', 'male', 'survival_rate'])
+    df_death_rate = df_death_rate / 100000
+    df_death_rate = df_death_rate.stack().reset_index()
+    df_death_rate['male'] = df_death_rate['level_1'] == 'male'
+    df_death_rate.rename(columns={0: 'death_rate', 'level_0': 'age'}, inplace=True)
+    df_death_rate = df_death_rate.reindex(columns=['age', 'male', 'death_rate'])
 
     return {
         'age_at_childbirth_male': age_at_childbirth_male,
@@ -50,7 +49,7 @@ def init_consts():
         'birthrate_male': birthrate_male,
         'birthrate_female': birthrate_female,
         'male_myoji_rate': male_myoji_rate,
-        'df_survival_rate': df_survival_rate,
+        'df_death_rate': df_death_rate,
     }
 
 
@@ -78,29 +77,24 @@ def init_generation_zero():
     df_age_pyramid = pd.DataFrame(
         [age_pyramid['male'], age_pyramid['female']],
         index=['male', 'female']
-    )
-    df_age_pyramid_rate = df_age_pyramid / df_age_pyramid.sum().sum()
-    df_age_pyramid_rate = pd.DataFrame(
-        df_age_pyramid_rate.stack(),
-        columns=['rate']
-    )
-    df_age_pyramid_rate.reset_index(inplace=True)
-    df_age_pyramid_rate.rename(
-        columns={'level_0': 'sex', 'level_1': 'age'},
-        inplace=True
-    )
+    ).stack().reset_index().rename(columns={0: 'num','level_0': 'sex', 'level_1': 'age'})
 
-    df = pd.merge(
-        df_myoji.assign(cross_join_key=1),
-        df_age_pyramid_rate.assign(cross_join_key=1),
-        on='cross_join_key'
-    )
-    df['num'] = df['myoji_population'] * df['rate']
+    samples = []
+    for _, row in df_age_pyramid.iterrows():
+        df_sample = df_myoji.sample(n=row['num'], weights='myoji_population', replace=True).groupby('myoji_index').size().reset_index().rename(columns={0: 'num'})
+        df_sample['sex'] = row['sex']
+        df_sample['age'] = row['age']
+        samples.append(df_sample)
+
+    df = pd.concat(samples)
+    df['num'] = df['num'].astype('uint32')
     df['myoji_index'] = df['myoji_index'].astype('uint32')
     df['age'] = df['age'].astype('uint8')
     df['male'] = df['sex'] == 'male'
 
     df = df.reindex(columns=['myoji_index', 'male', 'age', 'num'])
+    df.sort_values(['myoji_index', 'male', 'age'], ascending=[True, False, True], inplace=True)
+    df.reset_index(drop=True, inplace=True)
 
     myoji_dict = dict(zip(df_myoji['myoji_index'], df_myoji['myoji']))
 
@@ -145,24 +139,37 @@ def next_year(consts, df_current_generation):
     df = pd.concat([df, df_babies])
 
     # 【死亡処理】
-    df = pd.merge(df, consts['df_survival_rate'], how='left', on=['age', 'male'])
-    df['num'] = df['num'] * df['survival_rate']
-    df.drop(columns=['survival_rate'], inplace=True)
+    # 世代ごとの死亡人数
+    df_ages = df.groupby(['male', 'age'])['num'].sum().reset_index()
+    df_death_ages = pd.merge(df_ages, consts['df_death_rate'], how='left', on=['age', 'male'])
+    df_death_ages['death_num'] = (df_death_ages['num'] * df_death_ages['death_rate']).round().astype('int32')
 
-    # 【レコードを減らす処理】
-    # 閾値を下回るレコードは削除
-    df[df['num'] > params['record_threshold']]['num'].sum()
+    samples = []
+    for _, row in df_death_ages.iterrows():
+        df_target = df.query(f'male=={row["male"]} and age=={row["age"]}')
+        df_sample = df_target.sample(n=row['death_num'], weights='num', replace=True).groupby('myoji_index').size().reset_index().rename(columns={0: 'death_num'})
+        df_sample['male'] = row['male']
+        df_sample['age'] = row['age']
+        samples.append(df_sample)
+    df_death = pd.concat(samples)
+
+    # 死亡人数を引く
+    df = pd.merge(df, df_death, how='left', on=['myoji_index', 'male', 'age'])
+    df['num'] = df['num'] - df['death_num'].fillna(0).astype('int32')
+
+    # 【レコードを減らす処理】数が0のレコードは削除
+    df = df[df['num'] > 0]
 
     # 【並び替え】
-    df.sort_values(['myoji_index', 'male', 'age'], ascending=[True, False, True])
+    df = df.reindex(columns=['myoji_index', 'male', 'age', 'num'])
+    df.sort_values(['myoji_index', 'male', 'age'], ascending=[True, False, True], inplace=True)
     df.reset_index(drop=True, inplace=True)
 
     return df
 
 
-def output_summary(df, year):
-    df_myoji_summary = df.groupby('myoji_index')['num'].sum()
-    df_myoji_summary.to_csv(f'output/myoji_{year}.csv')
+def save(df, year):
+    df.to_pickle(f'output/df_generation_{year}.pkl', compression='gzip')
     df_age_summary = df.groupby(['male', 'age'])['num'].sum()
     df_age_summary.to_csv(f'output/age_{year}.csv')
 
@@ -175,14 +182,13 @@ def main():
         json.dump(myoji_dict, f, indent=2, ensure_ascii=False)
 
     year = params['start_year']
-    output_summary(df_generation, year)
+    save(df_generation, year)
     year += 1
 
     consts = init_consts()
     while True:
-        gc.collect()
         df_generation = next_year(consts, df_generation)
-        output_summary(df_generation, year)
+        save(df_generation, year)
         year += 1
 
 

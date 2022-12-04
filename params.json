@@ -1,6 +1,5 @@
 {
   "start_year": 2015,
-  "record_threshold": 0.00001,
   "total_number_of_myoji": 300000,
   "num_of_births": {
     "sources": [
