@@ -142,7 +142,7 @@ def next_year(consts, df_current_generation):
     # 世代ごとの死亡人数
     df_ages = df.groupby(['male', 'age'])['num'].sum().reset_index()
     df_death_ages = pd.merge(df_ages, consts['df_death_rate'], how='left', on=['age', 'male'])
-    df_death_ages['death_num'] = (df_death_ages['num'] * df_death_ages['death_rate']).round().astype('int32')
+    df_death_ages['death_num'] = (df_death_ages['num'] * df_death_ages['death_rate']).round().astype('int32').replace({0: 1})  # 0を1に置き換えないと各性別・年齢に1人ずつ不死の人が出てくるので
 
     samples = []
     for _, row in df_death_ages.iterrows():
