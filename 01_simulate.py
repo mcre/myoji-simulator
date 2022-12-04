@@ -114,29 +114,32 @@ def next_year(consts, df_current_generation):
 
     num_of_father_candidates = df_father_candidates['num'].sum()
     num_of_mother_candidates = df_mother_candidates['num'].sum()
-    num_of_parent_ages = num_of_father_candidates + num_of_mother_candidates
-    num_of_boys = round(num_of_parent_ages * consts['birthrate_male'])
-    num_of_girls = round(num_of_parent_ages * consts['birthrate_female'])
-    num_of_babies = num_of_boys + num_of_girls
 
-    # 出産平均年齢の男女を出生人数ずつランダムに選択する。
-    # 重み付けして復元抽出することで名字の割合のとおりに抽出できる。
-    df_fathers = df_father_candidates.sample(n=num_of_babies, weights='num', replace=True).reset_index().drop(columns=['index', 'male', 'age', 'num']).rename(columns={'myoji_index': 'father_myoji_index'})
-    df_mothers = df_mother_candidates.sample(n=num_of_babies, weights='num', replace=True).reset_index().drop(columns=['index', 'male', 'age', 'num']).rename(columns={'myoji_index': 'mother_myoji_index'})
+    if num_of_father_candidates > 0 and num_of_mother_candidates > 0:
+        num_of_parent_ages = num_of_father_candidates + num_of_mother_candidates
+        num_of_boys = round(num_of_parent_ages * consts['birthrate_male'])
+        num_of_girls = round(num_of_parent_ages * consts['birthrate_female'])
+        num_of_babies = num_of_boys + num_of_girls
 
-    # 父母を横結合(結婚)
-    df_families = pd.concat([df_fathers, df_mothers], axis=1)
+        # 出産平均年齢の男女を出生人数ずつランダムに選択する。
+        # 重み付けして復元抽出することで名字の割合のとおりに抽出できる。
+        df_fathers = df_father_candidates.sample(n=num_of_babies, weights='num', replace=True).reset_index().drop(columns=['index', 'male', 'age', 'num']).rename(columns={'myoji_index': 'father_myoji_index'})
+        df_mothers = df_mother_candidates.sample(n=num_of_babies, weights='num', replace=True).reset_index().drop(columns=['index', 'male', 'age', 'num']).rename(columns={'myoji_index': 'mother_myoji_index'})
 
-    # 子供の性別と名字を付与
-    df_families['child_male'] = [True if item < num_of_boys else False for item in df_families.index]
-    df_families['child_myoji_father'] = np.random.rand(len(df_families)) < consts['male_myoji_rate']
-    df_families['child_myoji'] = df_families.apply(lambda row: row['father_myoji_index'] if row['child_myoji_father'] else row['mother_myoji_index'], axis=1)
+        # 父母を横結合(結婚)
+        df_families = pd.concat([df_fathers, df_mothers], axis=1)
+        print(df_families)
 
-    # 元データに子供データを0歳として追加
-    df_babies = df_families.groupby(['child_myoji', 'child_male']).size().reset_index()
-    df_babies['age'] = 0
-    df_babies = df_babies.rename(columns={'child_myoji': 'myoji_index', 'child_male': 'male', 0: 'num'})
-    df = pd.concat([df, df_babies])
+        # 子供の性別と名字を付与
+        df_families['child_male'] = [True if item < num_of_boys else False for item in df_families.index]
+        df_families['child_myoji_father'] = np.random.rand(len(df_families)) < consts['male_myoji_rate']
+        df_families['child_myoji'] = df_families.apply(lambda row: row['father_myoji_index'] if row['child_myoji_father'] else row['mother_myoji_index'], axis=1)
+
+        # 元データに子供データを0歳として追加
+        df_babies = df_families.groupby(['child_myoji', 'child_male']).size().reset_index()
+        df_babies['age'] = 0
+        df_babies = df_babies.rename(columns={'child_myoji': 'myoji_index', 'child_male': 'male', 0: 'num'})
+        df = pd.concat([df, df_babies])
 
     # 【死亡処理】
     # 世代ごとの死亡人数
@@ -186,7 +189,7 @@ def main():
     year += 1
 
     consts = init_consts()
-    while True:
+    while df_generation['num'].sum() > 0:
         df_generation = next_year(consts, df_generation)
         save(df_generation, year)
         year += 1
