@@ -128,7 +128,6 @@ def next_year(consts, df_current_generation):
 
         # 父母を横結合(結婚)
         df_families = pd.concat([df_fathers, df_mothers], axis=1)
-        print(df_families)
 
         # 子供の性別と名字を付与
         df_families['child_male'] = [True if item < num_of_boys else False for item in df_families.index]
