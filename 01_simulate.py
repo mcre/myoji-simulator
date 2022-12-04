@@ -171,16 +171,16 @@ def next_year(consts, df_current_generation):
 
 
 def save(df, year):
-    df.to_pickle(f'output/df_generation_{year}.pkl', compression='gzip')
+    df.to_pickle(f'output/01/df_generation_{year}.pkl', compression='gzip')
     df_age_summary = df.groupby(['male', 'age'])['num'].sum()
-    df_age_summary.to_csv(f'output/age_{year}.csv')
+    df_age_summary.to_csv(f'output/01/age_{year}.csv')
 
 
 def main():
-    os.makedirs('output', exist_ok=True)
+    os.makedirs('output/01', exist_ok=True)
     df_generation, myoji_dict = init_generation_zero()
 
-    with open('output/myoji_dict.json', 'w') as f:
+    with open('output/01/myoji_dict.json', 'w') as f:
         json.dump(myoji_dict, f, indent=2, ensure_ascii=False)
 
     year = params['start_year']
