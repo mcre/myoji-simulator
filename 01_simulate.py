@@ -64,7 +64,7 @@ def init_generation_zero():
 
     # 小数名字データを追加
     minor_myoji_population = population - df_myoji['myoji_population'].sum()
-    minor_myoji_len = params['total_number_of_myoji'] - len(df_myoji)
+    minor_myoji_len = params['total_number_of_myoji']['data'] - len(df_myoji)
     average_minor_population = minor_myoji_population / minor_myoji_len
     minor_items = pd.DataFrame([{
         'myoji_index': i + len(df_myoji) + 1,

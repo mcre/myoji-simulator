@@ -1,6 +1,9 @@
 {
   "start_year": 2015,
-  "total_number_of_myoji": 300000,
+  "total_number_of_myoji": {
+    "sources": [{ "name": "全国の苗字（名字）１２万種", "year": 2017, "link": "https://suzaki.skr.jp/my501.html" }],
+    "data": 123800
+  },
   "num_of_births": {
     "sources": [
       { "name": "年次別にみた出生数・出生率（人口千対）・出生性比及び合計特殊出生率", "year": 2015, "link": "https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&toukei=00450011&tstat=000001028897&cycle=7&year=20210&month=0&tclass1=000001053058&tclass2=000001053061&tclass3=000001053064&stat_infid=000032235768&result_back=1&tclass4val=0" }
