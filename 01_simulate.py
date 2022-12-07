@@ -172,8 +172,6 @@ def next_year(consts, df_current_generation):
 
 def save(df, year):
     df.to_pickle(f'output/01/df_generation_{year}.pkl', compression='gzip')
-    df_age_summary = df.groupby(['male', 'age'])['num'].sum()
-    df_age_summary.to_csv(f'output/01/age_{year}.csv')
 
 
 def main():

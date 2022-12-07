@@ -1,5 +1,3 @@
-まだ作成中・・・
-
 myoji-simulator
 =================
 
@@ -18,6 +16,25 @@ myoji-simulator
 および、[利用規約](https://myoji-yurai.net/terms.htm)(2018年12月27日改訂版)の内容から、本ツールのようなデータの使用方法は許容されるものと判断しました。
 
 入力用データについては、[利用規約](https://myoji-yurai.net/terms.htm)(2018年12月27日改訂版) 13(2) にスクレイピング不可と記載されているため、手作業で作成する必要があります。入力データを公開することも許容されている理解なのですが、念の為このリポジトリには入力データを含めないこととします。必要な場合は利用者各自で作成をお願いします。`input/sample_data.csv`を参考に`input/data.csv`に40,000位まで作成してください。
+
+## 環境
+
+* Python 3.9.4 (おそらく3.6以上で動きます)
+* numpy 1.23.5
+* pandas 1.5.2
+* matplotlib 3.6.2
+
+## 使用方法
+
+1. 前節を参照に`input/data.csv`を作成してください
+2. `python 01_simulate.py` を実行すると、シミュレーション結果が1年分ごとに `output/01/df_generation_{year}.pkl` に出力されます。数時間かかります。またmyoji_indexと名字の関係が `output/01/myoji.dict.json` に出力されます。
+3. `python 02_aggregate.py` を実行すると、シミュレーション結果を集約したものが `output/02/df_ages.pkl`, `output/02/df_myojis.pkl` に出力されます。
+4. `python 03_visualize.py` を実行すると、各種グラフ等が `output/03/` に出力されます。
+
+
+## 解説等
+
+* [note](https://note.com/m_cre), [Zenn](https://zenn.dev/m_cre)等に記載予定
 
 ## 免責事項
 
