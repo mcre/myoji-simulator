@@ -1,13 +1,18 @@
 import json
 import math
 import os
+import sys
 
 import numpy as np
 import pandas as pd
 
 
-with open('params.json') as f:
+PARAMS_NAME = sys.argv[1] if len(sys.argv) > 1 else 'default'
+with open(f'params/{PARAMS_NAME}.json') as f:
     params = json.load(f)
+
+
+OUTPUT_DIR = f'output/{PARAMS_NAME}/01/'
 
 
 def init_consts():
@@ -171,14 +176,14 @@ def next_year(consts, df_current_generation):
 
 
 def save(df, year):
-    df.to_pickle(f'output/01/df_generation_{year}.pkl', compression='gzip')
+    df.to_pickle(OUTPUT_DIR + f'df_generation_{year}.pkl', compression='gzip')
 
 
 def main():
-    os.makedirs('output/01', exist_ok=True)
+    os.makedirs(OUTPUT_DIR, exist_ok=True)
     df_generation, myoji_dict = init_generation_zero()
 
-    with open('output/01/myoji_dict.json', 'w') as f:
+    with open(OUTPUT_DIR + 'myoji_dict.json', 'w') as f:
         json.dump(myoji_dict, f, indent=2, ensure_ascii=False)
 
     year = params['start_year']

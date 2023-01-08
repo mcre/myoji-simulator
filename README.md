@@ -27,9 +27,10 @@ myoji-simulator
 ## 使用方法
 
 1. 前節を参照に`input/data.csv`を作成してください
-2. `python 01_simulate.py` を実行すると、シミュレーション結果が1年分ごとに `output/01/df_generation_{year}.pkl` に出力されます。数時間かかります。またmyoji_indexと名字の関係が `output/01/myoji.dict.json` に出力されます。
-3. `python 02_aggregate.py` を実行すると、シミュレーション結果を集約したものが `output/02/df_ages.pkl`, `output/02/df_myojis.pkl` に出力されます。
-4. `python 03_visualize.py` を実行すると、各種グラフ等が `output/03/` に出力されます。
+2. `python 01_simulate.py {params_name}` を実行すると、シミュレーション結果が1年分ごとに `output/{params_name}/01/df_generation_{year}.pkl` に出力されます。数時間以上かかります。またmyoji_indexと名字の関係が `output/{params_name}/01/myoji.dict.json` に出力されます。計算に利用されるパラメータは `params/{params_name}.json` が利用されます。
+  - params_nameを切り替えることでパラメータを変更したシミュレーションを別フォルダに出力することができます。
+1. `python 02_aggregate.py {params_name}` を実行すると、シミュレーション結果を集約したものが `output/{params_name}/02/` に出力されます。`output/{params_name}/01/` はこれ以降使用しないので不要であれば削除しても良いです。
+2. `python 03_visualize.py {params_name}` を実行すると、各種グラフ等が `output/{params_name}/03/` に出力されます。
 
 
 ## 解説等
