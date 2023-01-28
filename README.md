@@ -19,18 +19,18 @@ myoji-simulator
 
 ## 環境
 
-* Python 3.9.4 (おそらく3.6以上で動きます)
-* numpy 1.23.5
-* pandas 1.5.2
-* matplotlib 3.6.2
+* Python 3.11.1 (おそらく3.6以上で動きます)
+* numpy 1.24.1
+* polars 0.15.18
+* matplotlib 3.6.3
 
 ## 使用方法
 
 1. 前節を参照に`input/data.csv`を作成してください
-2. `python 01_simulate.py {params_name}` を実行すると、シミュレーション結果が1年分ごとに `output/{params_name}/01/df_generation_{year}.pkl` に出力されます。数時間以上かかります。またmyoji_indexと名字の関係が `output/{params_name}/01/myoji.dict.json` に出力されます。計算に利用されるパラメータは `params/{params_name}.json` が利用されます。
-  - params_nameを切り替えることでパラメータを変更したシミュレーションを別フォルダに出力することができます。
-1. `python 02_aggregate.py {params_name}` を実行すると、シミュレーション結果を集約したものが `output/{params_name}/02/` に出力されます。`output/{params_name}/01/` はこれ以降使用しないので不要であれば削除しても良いです。
-2. `python 03_visualize.py {params_name}` を実行すると、各種グラフ等が `output/{params_name}/03/` に出力されます。
+2. `python 01_simulate.py {params_name}` を実行すると、シミュレーション結果が1年分ごとに `output/{params_name}/01/df_age_{year}.arrow`, `output/{params_name}/01/df_myoji_{year}.arrow` に出力されます。またmyoji_indexと名字の関係が `output/{params_name}/01/myoji.dict.json` に出力されます。計算に利用されるパラメータは `params/{params_name}.json` が利用されます。
+    - params_nameを切り替えることでパラメータを変更したシミュレーションを別フォルダに出力することができます。
+    - `output/{params_name}/01/df_generation_{year}.pickle` が存在する場合、`python 01_simulate.py {params_name} {year}`を実行すると続きの年から計算を再開することができます
+3. `python 02_visualize.py {params_name}` を実行すると、各種グラフ等が `output/{params_name}/02/` に出力されます。
 
 
 ## 解説等
