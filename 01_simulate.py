@@ -261,6 +261,7 @@ def main():
         year = CONTINUE
         with open(OUTPUT_DIR + f'df_generation_{year}.pickle', 'rb') as f:
             df_generation = pickle.load(f)
+            df_generation = df_generation.with_columns(pl.col('age').cast(pl.UInt8))
     year += 1
 
     consts = init_consts()
