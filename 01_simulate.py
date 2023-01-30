@@ -235,7 +235,7 @@ def save(df, year):
         .groupby(['male', 'age'])
         .sum()
         .sort(['male', 'age'], reverse=[True, False])
-        .write_ipc(OUTPUT_DIR + f'df_age_{year}.arrow', compression='zstd')
+        .write_parquet(OUTPUT_DIR + f'df_age_{year}.parquet.gz', compression='gzip')
     )
     (
         df
@@ -243,7 +243,7 @@ def save(df, year):
         .groupby('myoji_index')
         .sum()
         .sort('myoji_index')
-        .write_ipc(OUTPUT_DIR + f'df_myoji_{year}.arrow', compression='zstd')
+        .write_parquet(OUTPUT_DIR + f'df_myoji_{year}.parquet.gz', compression='gzip')
     )
 
 
