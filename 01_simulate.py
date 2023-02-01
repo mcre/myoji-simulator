@@ -224,9 +224,9 @@ def next_year(consts, df):
 
 def save(df, year):
     if year % PICKLE_INTERVAL == 0:
-        with open(OUTPUT_DIR + f'df_generation_{year}.pickle', 'wb') as f:
+        with open(OUTPUT_DIR + f'df_generation_{year:06}.pickle', 'wb') as f:
             pickle.dump(df, f)
-        before_path = OUTPUT_DIR + f'df_generation_{year - PICKLE_INTERVAL}.pickle'
+        before_path = OUTPUT_DIR + f'df_generation_{year - PICKLE_INTERVAL:06}.pickle'
         if os.path.exists(before_path):
             os.remove(before_path)
     (
@@ -235,7 +235,7 @@ def save(df, year):
         .groupby(['male', 'age'])
         .sum()
         .sort(['male', 'age'], reverse=[True, False])
-        .write_parquet(OUTPUT_DIR + f'df_age_{year}.parquet.gz', compression='gzip')
+        .write_parquet(OUTPUT_DIR + f'df_age_{year:06}.parquet.gz', compression='gzip')
     )
     (
         df
@@ -243,7 +243,7 @@ def save(df, year):
         .groupby('myoji_index')
         .sum()
         .sort('myoji_index')
-        .write_parquet(OUTPUT_DIR + f'df_myoji_{year}.parquet.gz', compression='gzip')
+        .write_parquet(OUTPUT_DIR + f'df_myoji_{year:06}.parquet.gz', compression='gzip')
     )
 
 
@@ -259,7 +259,7 @@ def main():
         save(df_generation, year)
     else:
         year = CONTINUE
-        with open(OUTPUT_DIR + f'df_generation_{year}.pickle', 'rb') as f:
+        with open(OUTPUT_DIR + f'df_generation_{year:06}.pickle', 'rb') as f:
             df_generation = pickle.load(f)
             df_generation = df_generation.with_columns(pl.col('age').cast(pl.UInt8))
     year += 1
